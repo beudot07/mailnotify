@@ -16,9 +16,7 @@ class OC_MailNotify_Mailing {
 		$l = new OC_L10N('mailnotify');
 		$nm_upload = self::db_get_nm_upload();
 		$shares = self::db_get_share();
-   	}
-	
-	
+   }
 	
 	//==================== PUBLIC ==============================//
 /** @deprecated */
@@ -59,9 +57,9 @@ class OC_MailNotify_Mailing {
 		$l = new OC_L10N('mailnotify');
 		$intMsgUrl = OCP\Util::linkToAbsolute('index.php/apps/internal_messages');
 
-		$text = "You have a new message from <b>$fromUid</b>.
-				<p><br>$msg<br></p>
-				Please log in to <a href=\"$intMsgUrl\">%s</a> to reply.<br>";
+		$text  = $l->t('You have a new message from ');
+      $text .= '<b>'.$fromUid.'</b>.<p>'.$msg.'<br></p>';
+		$text .= $l->t('Please log in to <a href=\"%s\">%s</a> to reply.<br />', $intMsgUrl, $intMsgUrl);
 
 		OC_MailNotify_Mailing::sendEmail($text,$l->t('New message from '.$fromUid),$toUid);
 	}
@@ -97,21 +95,22 @@ class OC_MailNotify_Mailing {
 					} elseif(!self::is_uid_exclude($row['file_target'],$row['uid_owner'])) {  
 						$mailTo[$row['uid_owner']][] = $sharesKey;
 					}
-   					if(self::db_isgroup($row['share_with'])){ 
-                        foreach (self::db_get_usersOfGroup($row['share_with']) as $key => $user) {
-                           if (!self::is_uid_exclude('/Shared'.$row['file_target'],$row['share_with'])) { //if shared with user 
-                                $mailTo[$user][] = $sharesKey;
-                           }    
-                        }    
-                    }
+               if(self::db_isgroup($row['share_with'])){ 
+                  foreach (self::db_get_usersOfGroup($row['share_with']) as $key => $user) {
+                     if (!self::is_uid_exclude('/Shared'.$row['file_target'],$row['share_with'])) { //if shared with user 
+                             $mailTo[$user][] = $sharesKey;
+                     }    
+                  }    
+               }
 				}
 			}
 		} 
-															//var_dump($mailTo);
+      
+		//var_dump($mailTo);
 		//assamble emails
 		if (!empty($mailTo)) {
 			foreach ($mailTo as $uid => $files) {
-			$msg = '<ul> Following files have been modified. <br><br>';
+			$msg = $l->t('<ul> Following files have been modified. <br><br>');
 				foreach ($files as $rowId) {
 					$url_path = self::db_get_filecash_path($shares[$rowId]['item_source']);
 					$url_name = substr($shares[$rowId]['file_target'], 1);
@@ -124,26 +123,28 @@ class OC_MailNotify_Mailing {
 			}
 		}
 	}
-
-	
 	
 //================= PRIVATE ===============================//
 
 
-	private static function sendEmail($msg,$action,$toUid){
- 	$l = new OC_L10N('mailnotify');
+	private static function sendEmail($msg,$action,$toUid){    
+      $l = new OC_L10N('mailnotify');
 					
-		$txtmsg = '<html><p>Hi, '.$toUid.', <br><br>';
-		$txtmsg .= '<p>'.$msg;
+		$txtmsg = '<html><p>';
+      $txtmsg .= $l->t('Hi, ');
+      $txtmsg .= $toUid.', <br /><br /></p>';
+		$txtmsg .= '<p>'.$msg.'</p>';
 		$txtmsg .= $l->t('<p>This e-mail is automatic, please, do not reply to it.</p></html>');
- 		if (self::db_get_mail_by_user($toUid) !== NULL) {
-	 		$result = OC_Mail::send(self::db_get_mail_by_user($toUid), $toUid, '['.getenv('SERVER_NAME')."] - ".$action, $txtmsg, 'Mail_Notification@'.getenv('SERVER_NAME'), 'Owncloud', 1 );		
+      
+      $email = OC_Preferences::getValue($toUid, 'settings', 'email');
+      $from = OCP\Util::getDefaultEmailAddress('Sharing-noreply');
+      
+ 		if ( $email !== null ) {
+	 		OC_Mail::send($email, $toUid, "[Owncloud] ".$action, $txtmsg, $from, 'Owncloud', 1 );		
 		}else{
 		 	echo "Email address error<br>";
-		 }
+		}
 	}
-	
-	
 	
 	// check if $path shoud be excluded form $uid notifications.
 	// @return true if shoud be excluded false if not
@@ -245,14 +246,13 @@ class OC_MailNotify_Mailing {
 		}
 	}
 
-
-
-
 	//get the database table share.
 	private static function db_get_share(){
 		$query=OC_DB::prepare("SELECT * FROM `*PREFIX*share` ");
 		$result=$query->execute();
 		
+      $rtn = array();
+      
 		while($row=$result->fetchRow()) {
 			$rtn[] = $row;
 		}
@@ -404,7 +404,7 @@ class OC_MailNotify_Mailing {
 	}
 	
 	
-	
+	/** @deprecated : we now use OC API */
 	/**
 	 * Get email address of userID
 	 */
@@ -423,43 +423,37 @@ class OC_MailNotify_Mailing {
 		return $mail;
 
 	}
-	
-	
-	
+
 	private static function db_isgroup($gid){
 		$query=OC_DB::prepare('SELECT * FROM `*PREFIX*group_user` WHERE `gid` = ?');
 		$result=$query->execute(array($gid));
 		 
-		 if(OC_DB::isError($result)) {
-			return -1;
-		 }
+		if(OC_DB::isError($result)) {
+         return -1;
+		}
 		 
 		if($result->numRows() > 0){
-				return true; 
-			}else{
-				return false;
-			}
+			return true; 
+		}else{
+			return false;
+		}
 	}
-
-		
-
 
 	private static function db_get_usersOfGroup($gid){
 		$query=OC_DB::prepare('SELECT * FROM `*PREFIX*group_user` WHERE `gid` = ?');
 		$result=$query->execute(array($gid));
 		 
-		 if(OC_DB::isError($result)) {
+		if(OC_DB::isError($result)) {
 			return -1;
-		 }
-		$users =   array();
+		}
+		$users = array();
 	
 		while($row=$result->fetchRow()) {				
-		
-		$users[]=$row['uid'];	
-				
+         $users[] = $row['uid'];	
 		}
+      
 		return $users;
-			}
+	}
 
 
 //===================== INIT FUNCTIONS ==========================//
@@ -490,37 +484,35 @@ class OC_MailNotify_Mailing {
 	 
 	 
 	 
-	public static function ini_write($file, array $data)
-	{
-	    $output = '';
+	public static function ini_write($file, array $data){
+	   $output = '';
 
-	    $dir = dirname(__FILE__);
+	   $dir = dirname(__FILE__);
 		$filePath = $dir."/".$file;
 
-	 
-	    foreach ($data as $section => $values)
-	    {
+	   foreach ($data as $section => $values)
+	   {
 
-	        if (!is_array($values)) {
-	            continue;
-	        }
+	      if (!is_array($values)) {
+	         continue;
+	      }
 	 	
-	        //add section
-	        $output .= "[$section]\n";
+	      //add section
+	      $output .= "[$section]\n";
 	 
-	        //add key/value pairs
-	        foreach ($values as $key => $val) {
-	            $output .= $key."=".$val."\n";
+	      //add key/value pairs
+	      foreach ($values as $key => $val) {
+	         $output .= $key."=".$val."\n";
 
-	        }
+	      }
 
-	        $output .= "\n";
-	    }
+	      $output .= "\n";
+	   }
 	 
-	    unlink($filePath);
-	    if(!file_put_contents($filePath, trim($output))){
+	   unlink($filePath);
+	   if(!file_put_contents($filePath, trim($output))){
 	    	//print("failure");
-	    }
+	   }
 	}
 	 
 	 
@@ -598,7 +590,4 @@ class OC_MailNotify_Mailing {
 	    return $data;
 	}
 
-
-
 }
-//http://www.youtube.com/watch?v=TJL4Y3aGPuA
