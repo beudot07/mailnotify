@@ -55,7 +55,7 @@ class OC_MailNotify_Mailing {
 	 */
 	public static function email_IntMsg($fromUid, $toUid, $msg){		
 		$l = new OC_L10N('mailnotify');
-		$intMsgUrl = OCP\Util::linkToAbsolute('index.php/apps/internal_messages');
+		$intMsgUrl = OCP\Util::linkToPublic('index.php/apps/internal_messages');
 
 		$text  = $l->t('You have a new message from ');
       $text .= '<b>'.$fromUid.'</b>.<p>'.$msg.'<br></p>';
@@ -114,7 +114,7 @@ class OC_MailNotify_Mailing {
 				foreach ($files as $rowId) {
 					$url_path = self::db_get_filecash_path($shares[$rowId]['item_source']);
 					$url_name = substr($shares[$rowId]['file_target'], 1);
-					$msg .='<li><a href="'.OCP\Util::linkTo('index.php/apps/files?dir=//Shared','').'" target="_blank">'.$url_name.'</a></li>'; //FIXME static redirection :(
+					$msg .='<li><a href="'.OCP\Util::linkToPublic('index.php/apps/files?dir=//Shared','').'" target="_blank">'.$url_name.'</a></li>'; //FIXME static redirection :(
 					OC_MailNotify_Mailing::db_remove_all_nmuploads_for($shares[$rowId]['file_source']);
 				}	
 
