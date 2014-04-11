@@ -1,8 +1,11 @@
-<?php $TRANSLATIONS = array(
-	'Notify' => 'Notifier',
-	'There was'=>'Il y a',
-	'new files uploaded in'=>'nouveaux fichiers dans',
-	'New upload'=>'Nouveau chargement',
-	'This e-mail is automatic, please, do not reply to it. If you no longer want to receive theses alerts, disable notification on each shared items.'=>'Ce courriel est automatique, s\'il vous plait, n\'y répondez pas. Si vous ne désirez plus recevoir ce genre d\'alertes, désactivez les notification sur chaque objet partagé.',
-	'<p>Hi %s,<br> You have a new message from <b>%s</b>.<p %s><br>%s<br></p>Please log in to <a href="%s">%s</a> to reply.<br><p %s>This e-mail is automatic, please, do not reply to it.</p></html>'=>'<p>Bonjour %s,<br> Vous avez recu un nouveau message de <b>%s</b>.<p %s><br>%s<br></p> Accedez a <a href="%s">%s</a> pour repondre.<br><p %s>Ce courriel est automatique, s\'il vous plait, n\'y répondez pas.</p></html>'
+<?php 
+$TRANSLATIONS = array(
+   'You have a new message from ' => 'Vous avez un nouveau message de ',
+   'Please log in to <a href=\"%s\">%s</a> to reply.<br />' =>'Connectez-vous sur <a href=\"%s\">%s</a> pour r&eacute;pondre.<br />',
+   'New message from '=>'Nouveau message de ',
+   '<ul> Following files have been modified. <br><br>'=>'<ul> Les fichiers suivants ont &eacute;t&eacute; modifi&eacute;s. <br><br>',
+   'New upload'=>'Nouveau fichier',
+   'Hi, ' => 'Bonjour, ',
+   '<p>This e-mail is automatic, please, do not reply to it.</p></html>' => '<p>Ceci est un email automatique, ne tentez pas d\'y r&eacute;pondre</p></html>'
 );
+
